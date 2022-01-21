@@ -85,7 +85,7 @@ def main():
     output = execute_command('admin display-config\n', channel, options.device.upper())
     pattern = '(?<=password).*|(?<=authentication-key).*|(?<=secret).*|(?<=authentication hash md5).*|(?<=usm-community).*'
     with open(options.device+'.cfg', 'w') as outfile:
-        pass_free = re.sub(pattern, '### Password Removed ###', output, re.MULTILINE)
+        pass_free = re.sub(pattern, '### Password Removed ###', output)
         outfile.writelines(pass_free)
 
     #No python modules install to support encryption as such use standard linux commands
@@ -94,12 +94,12 @@ def main():
         stdout=subprocess.PIPE,
         shell=True)
 
-    #time.sleep(10)
+    time.sleep(10)
 
-    #result = subprocess.Popen(
-    #    ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "EPE Sanitised config" xxx@xxx.xxx'],
-    #    stdout=subprocess.PIPE,
-    #    shell=True)
+    result = subprocess.Popen(
+        ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "EPE Sanitised config" xxx.xxx@xxx.xxx'],
+        stdout=subprocess.PIPE,
+        shell=True)
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)  #catch ctrl-c and call handler to terminate the script
