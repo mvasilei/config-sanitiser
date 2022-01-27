@@ -99,7 +99,7 @@ def main():
     time.sleep(10)
 
     result = subprocess.Popen(
-        ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "EPE Sanitised config" ' + email],
+        ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "EPE Sanitised config" ' + options.email],
         stdout=subprocess.PIPE,
         shell=True)
 
