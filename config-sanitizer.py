@@ -45,7 +45,7 @@ def execute_command(command, channel, host):
         data_no_trails = data.strip()
 
         if len(data_no_trails) > 0: #and
-            if data_no_trails.endswith(':'+host+'#'):
+            if data_no_trails.endswith(host+'#'):
                 break
 
     if channel.recv_ready():
@@ -82,7 +82,7 @@ def main():
 
     username, password = get_user_password()
     channel, client = connection_establishment(username, password, options.device)
-    output = execute_command('admin display-config\n', channel, options.device.upper())
+    output = execute_command('admin display-config\n', channel, options.device.upper().split('-')[1])
     pattern = '(?<=password).*|(?<=authentication-key).*|(?<=secret).*|(?<=authentication hash md5).*|(?<=usm-community).*'
     with open(options.device+'.cfg', 'w') as outfile:
         pass_free = re.sub(pattern, '### Password Removed ###', output)
