@@ -69,6 +69,8 @@ def main():
                             help='Specify device name')
     parser.add_option('-z', '--zipassword', dest='zipassword',
                             help='Password to encrypt zipfile')
+    parser.add_option('-m', '--email', dest='email',
+                            help='Email address to send the sanitised file')
 
     (options, args) = parser.parse_args()
 
@@ -76,9 +78,9 @@ def main():
         parser.print_help()
         exit()
 
-    if not (options.device and options.zipassword):
+    if not (options.device and options.zipassword and options.email):
         parser.print_help()
-        parser.error('Please specify both device and zip password')
+        parser.error('Please specify device, zip password and email address')
 
     username, password = get_user_password()
     channel, client = connection_establishment(username, password, options.device)
@@ -97,7 +99,7 @@ def main():
     time.sleep(10)
 
     result = subprocess.Popen(
-        ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "EPE Sanitised config" xxx.xxx@xxx.xxx'],
+        ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "EPE Sanitised config" ' + email],
         stdout=subprocess.PIPE,
         shell=True)
 
