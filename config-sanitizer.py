@@ -17,7 +17,6 @@ def connection_establishment(USER, PASS, host):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(host, 22, username=USER, password=PASS)
         channel = client.invoke_shell()
-        channel.send('environment no more\n')
         while not channel.recv_ready():
             time.sleep(0.5)
 
@@ -45,7 +44,7 @@ def execute_command(command, channel, host):
         data_no_trails = data.strip()
 
         if len(data_no_trails) > 0: #and
-            if data_no_trails.upper().endswith(':'+host+'#'):
+            if data_no_trails.upper().endswith(host+'#'):
                 break
 
     if channel.recv_ready():
@@ -62,6 +61,8 @@ def get_user_password():
     return USER, PASS
 
 def main():
+    pattern = ''
+
     #create command line options menu
     usage = 'usage: %prog options [arg]'
     parser = OptionParser(usage)
@@ -84,8 +85,16 @@ def main():
 
     username, password = get_user_password()
     channel, client = connection_establishment(username, password, options.device)
-    output = execute_command('admin display-config\n', channel, options.device.upper())
-    pattern = '(?<=password).*|(?<=authentication-key).*|(?<=secret).*|(?<=authentication hash md5).*|(?<=usm-community).*'
+    output = execute_command('show version | i Version\n', channel, options.device.upper())
+    if 'Cisco' in output:
+        execute_command('term len 0\n', channel, options.device.upper())
+        output = execute_command('show run\n', channel, options.device.upper())
+        pattern = '(?<=password\s).*|(?<=key-string\s).*|(?<=secret\s).*|(?<=\sauth\s).*|(?<=priv\s).*|(?<=key\s).*|(?<=authentication\s).*'
+    else:
+        execute_command('environment no more\n', channel, options.device.upper())
+        output = execute_command('admin display-config\n', channel, options.device.upper())
+        pattern = '(?<=password).*|(?<=authentication-key).*|(?<=secret).*|(?<=authentication hash md5).*|(?<=usm-community).*'
+
     with open(options.device+'.cfg', 'w') as outfile:
         pass_free = re.sub(pattern, '### Password Removed ###', output)
         outfile.writelines(pass_free)
@@ -99,7 +108,7 @@ def main():
     time.sleep(10)
 
     result = subprocess.Popen(
-        ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "EPE Sanitised config" ' + options.email],
+        ['uuencode ' + options.device+'.zip' + ' ' + options.device+'.zip' + ' | mailx -s "Sanitised config" ' + options.email],
         stdout=subprocess.PIPE,
         shell=True)
 
