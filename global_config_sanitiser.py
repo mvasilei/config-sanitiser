@@ -1,5 +1,5 @@
 #! /usr/bin/env python2.6
-import sys
+import sys, os
 import signal, re, xlrd, subprocess
 from optparse import OptionParser
 
@@ -12,7 +12,7 @@ def read_from_book(filename):
     epe_list = book.sheet_by_name('PE List')
     agn = book.sheet_by_name('Core AGN')
 
-    return epe_list.col_slice(0,1), agn.col_slice(2,1)
+    return epe_list.col_slice(0,1), agn.col_slice(0,1)
 
 def sanitise(devices, pattern):
     for i in range(len(devices)):
@@ -20,7 +20,7 @@ def sanitise(devices, pattern):
             ['cat /curr/' + devices[i].value.lower() + '.cfg'],
             stdout=subprocess.PIPE,
             shell=True)
-        with open(devices[i].value +'.cfg', 'w') as outfile:
+        with open(devices[i].value +'_clean.cfg', 'w') as outfile:
             print('Sanitising ' + devices[i].value)
             pass_free = re.sub(pattern, '### Password Removed ###', ''.join(result.stdout.readlines()))
             outfile.writelines(pass_free)
@@ -54,9 +54,12 @@ def main():
     sanitise(agn, pattern)
 
     #No python modules install to support encryption as such use standard linux commands
+    if os.path.exists('all_devices.zip'):
+        os.remove('all_devices.zip')
+
     print('Compressing config files...')
     result = subprocess.call(
-        ['zip -P ' + options.zipassword + ' -9 all_devices.zip *.cfg'],
+        ['zip -P ' + options.zipassword + ' -9 all_devices.zip *_clean.cfg'],
         stdout=subprocess.PIPE,
         shell=True)
 
