@@ -60,7 +60,6 @@ def main():
     print('Compressing config files...')
     result = subprocess.call(
         ['zip -P ' + options.zipassword + ' -9 all_devices.zip *_clean.cfg'],
-        stdout=subprocess.PIPE,
         shell=True)
 
     result = subprocess.call(
